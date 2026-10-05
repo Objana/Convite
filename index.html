@@ -497,6 +497,11 @@
       </div>
 
       <div class="guest-name-wrap reveal" id="guestNameWrap">
+        <!-- EDIT MODE: shown only before the couple sets/locks the guest name -->
+        <div id="guestNameEdit" class="guest-name-edit">
+          <input type="text" id="guestNameInput" placeholder="Nome do(a) convidado(a)" maxlength="60">
+          <button type="button" id="lockGuestName">Definir nome</button>
+        </div>
         <!-- LOCKED VIEW: shown to the guest who receives the file -->
         <div id="guestNameLocked" class="guest-name-locked" style="display:none;">
           <span id="guestNameDisplay"></span>
@@ -728,15 +733,39 @@
 </button>
 
 <script>
-  // ---- Guest name from the link: ?convidado=Nome ----
+  // ---- Guest name: type name -> "Definir nome" -> personalised link ----
   (function(){
-    const wrap=document.getElementById('guestNameWrap'), locked=document.getElementById('guestNameLocked');
+    const wrap=document.getElementById('guestNameWrap');
+    const editBox=document.getElementById('guestNameEdit');
+    const locked=document.getElementById('guestNameLocked');
     const p=new URLSearchParams(location.search+'&'+location.hash.replace(/^#/,''));
     const guest=(p.get('convidado')||'').trim().slice(0,60);
-    if(!guest){ wrap.style.display='none'; return; }
-    locked.style.display='block';
-    document.getElementById('guestNameDisplay').textContent=guest;
-    const f=document.getElementById('guestName'); if(f) f.value=guest;
+    if(guest){
+      editBox.style.display='none'; locked.style.display='block';
+      document.getElementById('guestNameDisplay').textContent=guest;
+      const f=document.getElementById('guestName'); if(f) f.value=guest;
+      return;
+    }
+    const input=document.getElementById('guestNameInput');
+    document.getElementById('lockGuestName').addEventListener('click',()=>{
+      const name=input.value.trim();
+      if(!name){ input.focus(); input.style.boxShadow='0 0 0 2px #5A1F1F'; return; }
+      input.style.boxShadow='';
+      const link=location.origin+location.pathname+'?convidado='+encodeURIComponent(name);
+      const wa='https://wa.me/?text='+encodeURIComponent('Com muita alegria, Fátima & Lélio convidam '+name+' para o seu casamento 💍\nAbra o seu convite: '+link);
+      const old=wrap.querySelector('.guest-link-out'); if(old) old.remove();
+      const out=document.createElement('div'); out.className='guest-link-out';
+      out.innerHTML='<input type="text" readonly><div class="row"><button type="button" data-a="copy">Copiar link</button><button type="button" data-a="wa">Enviar no WhatsApp</button></div>';
+      out.querySelector('input').value=link;
+      out.addEventListener('click',e=>{
+        const a=e.target.dataset.a; if(!a) return;
+        if(a==='wa'){ window.open(wa,'_blank'); return; }
+        const inp=out.querySelector('input'); inp.select();
+        try{ navigator.clipboard.writeText(link); }catch(_){ try{ document.execCommand('copy'); }catch(__){} }
+        e.target.textContent='Copiado ✓';
+      });
+      wrap.appendChild(out);
+    });
   })();
 
   // ---- Background music (starts on the tap that opens the cover) ----
