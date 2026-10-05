@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Gerador de convites — Fátima & Lélio</title>
+<style>
+body{font-family:Georgia,serif;background:#F7F1E6;color:#2C2620;margin:0;padding:24px;max-width:640px;margin:0 auto}
+h1{font-size:1.5rem;color:#8C6F3D;margin:0 0 6px} p{line-height:1.5;margin:6px 0 16px}
+textarea{width:100%;min-height:130px;box-sizing:border-box;padding:12px;font:inherit;border:1px solid #B8965A;border-radius:6px}
+button{font:inherit;cursor:pointer;border:0;border-radius:6px;padding:10px 16px;background:#8C6F3D;color:#fff;margin-top:10px}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #E2C98E;border-radius:6px;padding:10px 12px;margin-top:10px;flex-wrap:wrap}
+.row b{flex:1 1 140px}.row button{margin:0;padding:8px 12px;font-size:.85rem}.wa{background:#25D366}
+</style></head><body>
+<h1>Gerador de convites</h1>
+<p>Escreva um nome por linha. Para cada convidado é criado um link personalizado, pronto a enviar no WhatsApp.</p>
+<textarea id="names" placeholder="Maria Silva&#10;João e Ana Machava&#10;Família Cossa"></textarea>
+<button id="go">Gerar links</button>
+<div id="out"></div>
+<script>
+const base=location.href.replace(/[^\/]*$/,'');
+document.getElementById('go').onclick=()=>{
+  const out=document.getElementById('out'); out.innerHTML='';
+  document.getElementById('names').value.split('\n').map(n=>n.trim()).filter(Boolean).forEach(name=>{
+    const link=base+'?convidado='+encodeURIComponent(name);
+    const msg='Com muita alegria, Fátima & Lélio convidam '+name+' para o seu casamento 💍\nAbra o seu convite: '+link;
+    const row=document.createElement('div'); row.className='row';
+    const b=document.createElement('b'); b.textContent=name;
+    const c=document.createElement('button'); c.textContent='Copiar link';
+    c.onclick=()=>{ navigator.clipboard.writeText(link).then(()=>c.textContent='Copiado ✓'); };
+    const w=document.createElement('button'); w.className='wa'; w.textContent='WhatsApp';
+    w.onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    row.append(b,c,w); out.appendChild(row);
+  });
+};
+</script></body></html>
