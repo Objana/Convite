@@ -505,6 +505,7 @@
 
 
 
+
   /* ===== MURAL ===== */
   #mural{ padding:0; overflow:visible; overflow-x:clip; text-align:left; background:#14090C; color:#fff; }
   #mural .mu-bg{ position:sticky; top:0; height:100vh; height:100svh; margin-bottom:-100vh; margin-bottom:-100svh; z-index:0; overflow:hidden;
@@ -571,7 +572,6 @@
   #invocacao .invocation-text{ color:#140E0A; font-weight:500; text-shadow:0 0 8px rgba(247,241,230,.85), 0 0 2px rgba(247,241,230,.9); }
   #invocacao .invocation-text strong{ color:#6B4A12; }
   #invocacao .eyebrow, #invocacao .invocation-sign{ color:#6F5220; font-weight:700; }
-
 
   /* ===== RSVP ATTENTION ===== */
   #rsvp .rsvp-cta-hint{ display:block; margin:4px 0 2px; font-family:'Marcellus',serif; font-size:.74rem; letter-spacing:2.4px; text-transform:uppercase; font-weight:700; color:#B80D2C; animation:rsvpHint 1.6s ease-in-out infinite; }
@@ -979,7 +979,7 @@
 
   // ---- MURAL ----
   (function(){
-    const CFG={ db:'', demo:false, poll:10000 };
+    const CFG={ db:'https://convite-fatima-lelio-default-rtdb.europe-west1.firebasedatabase.app', demo:false, poll:10000 };
     const $=id=>document.getElementById(id);
     const feed=$('muFeed'); if(!feed) return;
     if(!CFG.demo && !CFG.db){ const sec=document.getElementById('mural'); if(sec) sec.style.display='none'; document.querySelectorAll('.mu-link').forEach(l=>l.style.display='none'); return; }
