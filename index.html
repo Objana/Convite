@@ -598,6 +598,20 @@
   @keyframes rsvpShine{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
   @keyframes rsvpTick{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.28); } }
   #rsvp .rsvp-note strong{ color:#7A5217; }
+
+
+  /* ===== LOCATION ATTENTION ===== */
+  .detail-item.location{ padding:10px 4px 12px; border-radius:16px; background:rgba(224,20,47,.16); border:1px solid rgba(255,140,160,.55); animation:locGlow 2.2s ease-in-out infinite; }
+  @keyframes locGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,77,109,0), 0 0 14px rgba(255,77,109,.25); } 50%{ box-shadow:0 0 0 4px rgba(255,77,109,.18), 0 0 26px rgba(255,77,109,.55); } }
+  .detail-item.location .detail-icon{ position:relative; background:linear-gradient(135deg,#FF6B8B,#E0142F); border:2px solid #FFD98A; animation:none; }
+  .detail-item.location .detail-icon::before,.detail-item.location .detail-icon::after{ content:''; position:absolute; inset:-2px; border-radius:50%; border:2px solid #FF4D6D; opacity:0; animation:locRipple 2s ease-out infinite; pointer-events:none; }
+  .detail-item.location .detail-icon::after{ animation-delay:1s; }
+  @keyframes locRipple{ 0%{ transform:scale(1); opacity:.9; } 100%{ transform:scale(2.2); opacity:0; } }
+  .detail-item.location .detail-icon svg{ stroke:#fff; transform-origin:50% 100%; animation:pinHop 1.6s ease-in-out infinite; }
+  @keyframes pinHop{ 0%,55%,100%{ transform:translateY(0) scaleY(1); } 20%{ transform:translateY(-7px) scaleY(1.08); } 35%{ transform:translateY(0) scaleY(.88); } 45%{ transform:translateY(-2px) scaleY(1); } }
+  .detail-item.location .detail-label{ color:#fff; font-weight:700; }
+  .detail-item.location .detail-tap{ display:inline-flex; align-items:center; gap:4px; margin-top:2px; padding:5px 9px; white-space:nowrap; border-radius:20px; background:linear-gradient(135deg,#FFE29A,#E0A93E); color:#2A1208; opacity:1; font-weight:700; font-size:.58rem; letter-spacing:.8px; animation:tapPulse 1.8s ease-out infinite; }
+  .detail-item.location .detail-tap::before{ content:'👆'; display:inline-block; font-size:.85rem; animation:tapHand 1.2s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -862,13 +876,6 @@
       <div class="field" style="margin-bottom:14px;">
         <label for="guestName">O seu nome completo</label>
         <input type="text" id="guestName" required placeholder="Escreva o seu nome">
-      </div>
-      <div class="field">
-        <label>Vai comparecer?</label>
-        <div class="radio-group" id="attendGroup">
-          <div class="radio-opt selected" data-value="sim">Sim, estarei lá</div>
-          <div class="radio-opt" data-value="nao">Não poderei ir</div>
-        </div>
       </div>
       <div class="field" id="companionField">
         <label for="companionName">Acompanhante (até 2 pessoas, sem crianças)</label>
@@ -1169,17 +1176,7 @@
   rsvpModal.addEventListener('click', (e) => { if(e.target === rsvpModal) rsvpModal.classList.remove('open'); });
 
   // attendance toggle
-  let attending = 'sim';
-  const attendGroup = document.getElementById('attendGroup');
-  const companionField = document.getElementById('companionField');
-  attendGroup.addEventListener('click', (e) => {
-    const opt = e.target.closest('.radio-opt');
-    if(!opt) return;
-    attendGroup.querySelectorAll('.radio-opt').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-    attending = opt.dataset.value;
-    companionField.style.display = attending === 'sim' ? 'block' : 'none';
-  });
+  const attending = 'sim';
 
   // WhatsApp option click -> build message & open wa.me link
   document.querySelectorAll('.wa-option').forEach(opt => {
@@ -1193,19 +1190,15 @@
       const companion = document.getElementById('companionName').value.trim();
       const phone = opt.dataset.phone;
 
-      let msg = '';
-      if(attending === 'sim'){
-        msg = `Olá! Sou ${name} e confirmo com alegria a minha presença no casamento de Fátima & Lélio, no dia 12 de Dezembro de 2026.`;
-        if(companion){
-          msg += ` Estarei acompanhado(a) de ${companion}.`;
-        }
-      } else {
-        msg = `Olá! Sou ${name}. Com pesar, informo que não poderei estar presente no casamento de Fátima & Lélio no dia 12 de Dezembro de 2026. Desejo-vos toda a felicidade!`;
+      let msg = `Olá, Fátima & Lélio! 💍\n\nCom o coração cheio de alegria, confirmo a minha presença no vosso casamento.`;
+      if(companion){
+        msg += `\nEstarei acompanhado(a) de *${companion}*.`;
       }
+      msg += `\n\n📅 Sábado, 12 de Dezembro de 2026\n🕛 Chegada às 12h\n📍 Salão Pepemela Eventos, Bairro Tchumene-2, Q. 19\n\nObrigado(a) por me permitirem fazer parte da vossa história de amor. Que Deus abençoe a vossa união e que cada dia lado a lado seja uma nova bênção! 🙏❤️`;
 
       const url = `https://wa.me/258${phone}?text=${encodeURIComponent(msg)}`;
       window.open(url, '_blank');
-      if(attending === 'sim'){ showRsvpDone(name); } else { rsvpModal.classList.remove('open'); }
+      showRsvpDone(name);
     });
   });
 
