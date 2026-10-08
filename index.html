@@ -600,18 +600,18 @@
   #rsvp .rsvp-note strong{ color:#7A5217; }
 
 
+
+
   /* ===== LOCATION ATTENTION ===== */
-  .detail-item.location{ padding:10px 4px 12px; border-radius:16px; background:rgba(224,20,47,.16); border:1px solid rgba(255,140,160,.55); animation:locGlow 2.2s ease-in-out infinite; }
-  @keyframes locGlow{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,77,109,0), 0 0 14px rgba(255,77,109,.25); } 50%{ box-shadow:0 0 0 4px rgba(255,77,109,.18), 0 0 26px rgba(255,77,109,.55); } }
-  .detail-item.location .detail-icon{ position:relative; background:linear-gradient(135deg,#FF6B8B,#E0142F); border:2px solid #FFD98A; animation:none; }
-  .detail-item.location .detail-icon::before,.detail-item.location .detail-icon::after{ content:''; position:absolute; inset:-2px; border-radius:50%; border:2px solid #FF4D6D; opacity:0; animation:locRipple 2s ease-out infinite; pointer-events:none; }
-  .detail-item.location .detail-icon::after{ animation-delay:1s; }
-  @keyframes locRipple{ 0%{ transform:scale(1); opacity:.9; } 100%{ transform:scale(2.2); opacity:0; } }
+  .detail-item.location{ padding:0; border:none; background:none; box-shadow:none; animation:none; }
+  .detail-item.location .detail-icon{ position:relative; background:linear-gradient(135deg,#FF6B8B,#E0142F); border:2px solid #FFD98A; animation:locHalo 2s ease-out infinite; }
+  @keyframes locHalo{ 0%{ box-shadow:0 0 0 0 rgba(255,77,109,.7); } 70%{ box-shadow:0 0 0 11px rgba(255,77,109,0); } 100%{ box-shadow:0 0 0 0 rgba(255,77,109,0); } }
   .detail-item.location .detail-icon svg{ stroke:#fff; transform-origin:50% 100%; animation:pinHop 1.6s ease-in-out infinite; }
-  @keyframes pinHop{ 0%,55%,100%{ transform:translateY(0) scaleY(1); } 20%{ transform:translateY(-7px) scaleY(1.08); } 35%{ transform:translateY(0) scaleY(.88); } 45%{ transform:translateY(-2px) scaleY(1); } }
-  .detail-item.location .detail-label{ color:#fff; font-weight:700; }
-  .detail-item.location .detail-tap{ display:inline-flex; align-items:center; gap:4px; margin-top:2px; padding:5px 9px; white-space:nowrap; border-radius:20px; background:linear-gradient(135deg,#FFE29A,#E0A93E); color:#2A1208; opacity:1; font-weight:700; font-size:.58rem; letter-spacing:.8px; animation:tapPulse 1.8s ease-out infinite; }
-  .detail-item.location .detail-tap::before{ content:'👆'; display:inline-block; font-size:.85rem; animation:tapHand 1.2s ease-in-out infinite; }
+  @keyframes pinHop{ 0%,55%,100%{ transform:translateY(0) scaleY(1); } 20%{ transform:translateY(-5px) scaleY(1.06); } 35%{ transform:translateY(0) scaleY(.9); } 45%{ transform:translateY(-1px) scaleY(1); } }
+  .detail-item.location .detail-label{ color:#fff; font-weight:700; white-space:nowrap; font-size:.7rem; letter-spacing:.2px; }
+  .detail-item.location .detail-tap{ display:inline-flex; align-items:center; gap:3px; margin-top:3px; padding:3px 8px; border-radius:14px; background:linear-gradient(135deg,#FFE29A,#E0A93E); color:#2A1208; opacity:1; font-weight:700; font-size:.52rem; letter-spacing:.6px; white-space:nowrap; animation:locTap 1.8s ease-out infinite; }
+  @keyframes locTap{ 0%{ box-shadow:0 0 0 0 rgba(255,217,138,.7); } 70%{ box-shadow:0 0 0 7px rgba(255,217,138,0); } 100%{ box-shadow:0 0 0 0 rgba(255,217,138,0); } }
+  .detail-item.location .detail-tap::before{ content:'👆'; display:inline-block; font-size:.7rem; animation:tapHand 1.2s ease-in-out infinite; }
 </style>
 </head>
 <body>
