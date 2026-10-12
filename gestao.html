@@ -1618,7 +1618,7 @@ const SEC_NAME = { budget:"Orçamento", guests:"Convidados", mesas:"Mesas", musi
 const gid = id => document.getElementById(id);
 const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
-let gTok = null, gRef = lsGet("gs_rt"), gExp = 0, gUser = lsGet("gs_em") || "", gEs = null, gTimer = null, gSave = "off", gFirst = true;
+let gLast = 0, gTok = null, gRef = lsGet("gs_rt"), gExp = 0, gUser = lsGet("gs_em") || "", gEs = null, gTimer = null, gSave = "off", gFirst = true;
 const lastSent = {};
 function normalize(d) { const k = JSON.parse(JSON.stringify(APPDATA)); SECTIONS.forEach(s => { if (d && d[s] != null) k[s] = d[s]; }); return k; }
 const snap = s => JSON.stringify(state.data[s]);
@@ -1645,7 +1645,7 @@ function setSave(s) { gSave = s; updateSaveStatus(); }
 updateSaveStatus = function () {
   const el = gid("saveStatus"), t = gid("saveStatusTxt"), b = gid("unsavedBanner"); if (!el) return;
   el.classList.toggle("dirty", gSave !== "ok");
-  t.textContent = { ok: "Tudo guardado ✓", saving: "A guardar…", err: "Sem ligação — a tentar de novo", off: "A ligar…" }[gSave];
+  t.textContent = { ok: "Tudo guardado ✓" + (gLast ? " · " + new Date(gLast).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" }) : ""), saving: "A guardar…", err: "Sem ligação — a tentar de novo", off: "A ligar…" }[gSave];
   if (b) b.classList.remove("show");
 };
 async function pushChanges() {
@@ -1655,7 +1655,7 @@ async function pushChanges() {
   try {
     for (const s of ch) { const str = snap(s); await dbPut("dados/" + s, str); lastSent[s] = str; }
     await fetch(await dbUrl("historico"), { method: "POST", body: JSON.stringify({ u: gUser, s: ch, ts: { ".sv": "timestamp" } }) });
-    dirty = SECTIONS.some(s => snap(s) !== lastSent[s]); setSave(dirty ? "saving" : "ok"); if (dirty) schedule(300);
+    gLast = Date.now(); dirty = SECTIONS.some(s => snap(s) !== lastSent[s]); setSave(dirty ? "saving" : "ok"); if (dirty) schedule(300);
   } catch (e) { setSave("err"); schedule(5000); }
 }
 function schedule(ms) { clearTimeout(gTimer); gTimer = setTimeout(pushChanges, ms); }
@@ -1671,8 +1671,8 @@ function onStream(ev) {
   let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
   let changed = false;
   if (m.path === "/") {
-    if (m.data == null) { if (gFirst) { gid("gsLogin").classList.remove("show"); toast("Base de dados vazia. Clique em «Importar ficheiro» e escolha o ficheiro de dados iniciais."); } }
-    else SECTIONS.forEach(s => { if (applyRemote(s, m.data[s])) changed = true; });
+    if (m.data == null) { if (gFirst) { gid("gsLogin").classList.remove("show"); gid("gsEmpty").classList.add("show"); } }
+    else { gid("gsEmpty").classList.remove("show"); SECTIONS.forEach(s => { if (applyRemote(s, m.data[s])) changed = true; }); }
   } else { const s = m.path.split("/").filter(Boolean)[0]; if (SECTIONS.includes(s) && applyRemote(s, m.data)) changed = true; }
   if (gFirst) { gFirst = false; SECTIONS.forEach(s => { if (lastSent[s] === undefined) lastSent[s] = snap(s); }); render(); setSave("ok"); }
   else if (changed) { renderSoon(); toast("Atualizado por outra pessoa ✓"); }
@@ -1715,6 +1715,7 @@ function fbBoot() {
   document.body.insertAdjacentHTML("beforeend", `<div class="gs-ov" id="gsLogin"><div class="gs-box"><h2>Fátima &amp; Lélio</h2><p>Gestão do Casamento · entrar</p>
 <input id="gsEmail" type="email" placeholder="Email" autocomplete="username"><input id="gsPass" type="password" placeholder="Palavra-passe" autocomplete="current-password">
 <button class="gs-go" id="gsGo">Entrar</button><button class="gs-link" id="gsNew">Primeiro acesso? Criar a minha conta</button><button class="gs-link" id="gsReset">Esqueci a palavra-passe</button><div class="gs-err" id="gsErr"></div></div></div>
+<div class="gs-ov" id="gsEmpty"><div class="gs-box"><h2>Quase pronto</h2><p>A base de dados ainda está vazia. Carregue os dados do casamento <b>uma única vez</b>: ficam guardados na nuvem e aparecem sempre que entrar, em qualquer aparelho.</p><button class="gs-go" id="gsLoad">📂 Carregar os dados do casamento</button><p style="margin:12px 0 0;font-size:.8rem">Escolha o ficheiro <b>dados-iniciais-casamento.json</b> (na pasta de Downloads).</p><button class="gs-link" id="gsEmptyClose">Agora não</button></div></div>
 <div class="gs-ov" id="gsHist"><div class="gs-box"><h2>Histórico</h2><p>Últimas alterações</p><div class="gs-hist" id="gsHistList">A carregar…</div><button class="gs-go" id="gsHistClose">Fechar</button></div></div>`);
   const st = document.createElement("style"); st.textContent = `
 .gs-ov{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:linear-gradient(185deg,#211C17,#2C2620 60%,#332B23);padding:20px;}
@@ -1733,10 +1734,13 @@ function fbBoot() {
   gid("btnReset").style.display = "none"; gid("saveHint").innerHTML = "Grava <b>sozinha</b> na nuvem. Fátima e Lélio veem a mesma informação, ao vivo.";
   gid("btnExport").textContent = "💾 Cópia de segurança"; gid("btnImport").textContent = "📂 Importar ficheiro";
   const box = document.querySelector(".data-actions");
+  const sb = document.createElement("button"); sb.className = "data-btn"; sb.id = "btnSaveNow"; sb.textContent = "💾 Guardar agora"; sb.onclick = async () => { clearTimeout(gTimer); await pushChanges(); if (gSave === "ok") toast("Guardado ✓"); else toast("Não foi possível guardar agora. Vai tentar de novo.", true); }; box.insertBefore(sb, box.firstChild);
   const hb = document.createElement("button"); hb.className = "data-btn"; hb.textContent = "🕘 Histórico"; hb.onclick = showHistory; box.appendChild(hb);
   const lb = document.createElement("button"); lb.className = "data-btn"; lb.id = "btnLogout"; lb.textContent = "🚪 Sair"; lb.onclick = () => { lsSet("gs_rt", null); location.reload(); }; box.appendChild(lb);
   gid("gsGo").onclick = doLogin; gid("gsNew").onclick = doNew; gid("gsReset").onclick = doReset; gid("gsPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
   gid("gsHistClose").onclick = () => gid("gsHist").classList.remove("show");
+  gid("gsLoad").onclick = () => gid("fileImport").click(); gid("gsEmptyClose").onclick = () => gid("gsEmpty").classList.remove("show");
+  gid("fileImport").addEventListener("change", () => gid("gsEmpty").classList.remove("show"));
   if (FB.key.indexOf("COLE_AQUI") === 0) { showLogin("A aplicação ainda não está configurada (falta a chave do Firebase)."); return; }
   if (gRef) token().then(enter).catch(() => showLogin("Sessão terminada. Entre novamente.")); else showLogin();
 }
